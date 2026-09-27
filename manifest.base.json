@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Pixtex for n8n — Export workflow images",
+  "short_name": "Pixtex",
+  "description": "Export the n8n workflow you're editing as a crisp PNG or PDF — rendered from the workflow itself, not a screenshot.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "action": {
+    "default_title": "Pixtex for n8n",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "activeTab", "scripting", "offscreen", "downloads"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.app.n8n.cloud/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": ["https://pixtex.dev/*"]
+  }
+}

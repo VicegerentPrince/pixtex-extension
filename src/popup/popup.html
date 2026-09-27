@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pixtex for n8n</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/32.png" width="22" height="22" alt="">
+    <span class="brand">PIXTEX</span>
+    <span class="tag">for n8n</span>
+  </header>
+
+  <section id="site" aria-live="polite">
+    <p class="muted">Checking this tab…</p>
+  </section>
+
+  <section id="pro">
+    <h2>Pixtex Pro key</h2>
+    <p id="pro-status" class="muted">Optional — free renders carry a small watermark.</p>
+    <form id="pro-form" autocomplete="off">
+      <input id="pro-input" type="password" placeholder="pxt_…" spellcheck="false" aria-label="Pixtex key">
+      <button type="submit">Save</button>
+    </form>
+    <button id="pro-clear" class="link" type="button" hidden>Remove key</button>
+  </section>
+
+  <footer>
+    <a href="https://pixtex.dev" target="_blank" rel="noopener">pixtex.dev</a>
+    <a href="https://pixtex.dev/privacy" target="_blank" rel="noopener">Privacy</a>
+    <a href="https://github.com/VicegerentPrince/pixtex-extension" target="_blank" rel="noopener">Source</a>
+  </footer>
+  <script src="popup.js"></script>
+</body>
+</html>

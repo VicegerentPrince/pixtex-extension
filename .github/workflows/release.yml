@@ -1,0 +1,40 @@
+name: release
+
+# The store zip is only ever built here, from a tag — never on a laptop — so
+# the file uploaded to the Chrome Web Store can be matched against this source
+# and its provenance attestation.
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run vendor:check
+      - run: npm run build
+      - run: npm run check:bundle
+      - run: npm run zip
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: pixtex-extension-*.zip
+      - name: GitHub release with the store zip
+        run: gh release create "$GITHUB_REF_NAME" pixtex-extension-*.zip --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -48,9 +48,34 @@ Requested as narrowly as the job allows, and explained here before release:
 | `downloads` | Saves the file with its proper name |
 | `storage` | Your preferences, and the optional Pro key |
 
+## Develop
+
+```bash
+npm install
+npm run typecheck && npm test      # unit tests: detection, the n8n REST rule, minimising, messaging
+npm run build:dev                  # dist-dev/ — against a local Pixtex (web :3000, api :3001)
+npm run build                      # dist/ — the store build
+npm run check:bundle               # the store build keeps the promises above
+```
+
+Load `dist-dev/` from `chrome://extensions` (Developer mode → Load unpacked).
+
+`npm run e2e` drives the real extension in Chromium against a local n8n and a
+local Pixtex: PNG and PDF exports, an unsaved workflow via paste, **staying
+logged in to n8n afterwards**, Open in Pixtex (and a replayed handoff being
+refused), and a render slower than Chrome's 30-second service-worker limit. It
+expects n8n on `http://localhost:5678` (owner in `E2E_N8N_EMAIL` /
+`E2E_N8N_PASSWORD`), the Pixtex web app on `:3000`, and the API on `:3001` with
+`EXTENSION_ORIGINS=chrome-extension://pimgfpeogbapfnnebapamdfajflbinpj` — the
+dev build's pinned id.
+
+Releases are built by CI from a `vX.Y.Z` tag, with a provenance attestation on
+the zip — never from a laptop.
+
 ## License
 
-MIT — see [LICENSE](LICENSE).
+The code is MIT — see [LICENSE](LICENSE). The Pixtex name and mark (the files
+in `icons/`) are the project's brand and are not licensed for reuse.
 
 Built by [Muhammad Muneeb](https://github.com/VicegerentPrince) ·
 [pixtex.dev](https://pixtex.dev)

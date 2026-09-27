@@ -1,0 +1,35 @@
+{
+  "name": "pixtex-extension",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Export the n8n workflow you're editing as a crisp PNG or PDF — rendered from the workflow itself, not a screenshot.",
+  "license": "MIT",
+  "author": "Muhammad Muneeb (https://github.com/VicegerentPrince)",
+  "homepage": "https://pixtex.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VicegerentPrince/pixtex-extension.git"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs --flavour store",
+    "build:dev": "node scripts/build.mjs --flavour dev",
+    "build:e2e": "node scripts/build.mjs --flavour e2e",
+    "icons": "node scripts/icons.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "vendor:check": "node scripts/vendor-check.mjs",
+    "zip": "node scripts/zip.mjs",
+    "e2e": "node test/e2e/run.mjs"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.0",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "happy-dom": "^20.14.5",
+    "playwright": "1.61.1",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.10"
+  }
+}

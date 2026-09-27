@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      # Copied code may only change by being copied again from the monorepo.
+      - run: npm run vendor:check
+      - run: npm run build
+      # The store bundle keeps the README's promises (permissions, no key in
+      # the content script, closed shadow root, nothing pointing at localhost).
+      - run: npm run check:bundle
+      - run: npm run zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixtex-extension-zip
+          path: pixtex-extension-*.zip
