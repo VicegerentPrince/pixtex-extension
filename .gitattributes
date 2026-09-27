@@ -1,0 +1,6 @@
+# LF everywhere. Development happens on Windows, and the store zip is built
+# from this tree — a CRLF checkout would ship different bytes than the source
+# a reviewer or a user reads here.
+* text=auto eol=lf
+*.png binary
+*.zip binary
