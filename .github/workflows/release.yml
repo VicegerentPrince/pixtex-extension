@@ -17,11 +17,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      # No dependency cache on the job that builds the attested zip: a cache is
+      # shared with other runs, and npm ci straight from the lockfile is seconds.
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
+          node-version: 24
       - run: npm ci
       - name: Tag matches package.json
         run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
@@ -31,7 +32,7 @@ jobs:
       - run: npm run build
       - run: npm run check:bundle
       - run: npm run zip
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: pixtex-extension-*.zip
       - name: GitHub release with the store zip
