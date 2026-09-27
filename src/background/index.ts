@@ -16,7 +16,7 @@ import {
 } from '../shared/protocol'
 import { lookPatch } from '../vendor/look-presets'
 import type { ApiKeyInfo, ExportFormat } from '../vendor/pixtex-types'
-import { HANDOFF_PREFIX, MAX_HANDOFF_BYTES, judgeClaim, newNonce, type HandoffRecord } from './handoff'
+import { HANDOFF_PREFIX, MAX_HANDOFF_BYTES, judgeClaim, newNonce, staleHandoffKeys, type HandoffRecord } from './handoff'
 
 const VERSION = chrome.runtime.getManifest().version
 const OFFSCREEN_URL = chrome.runtime.getURL('offscreen.html')
@@ -186,10 +186,23 @@ function revokeWhenDone(downloadId: number, blobUrl: string): void {
 
 // ── Open in Pixtex ──────────────────────────────────────────────────────────────
 
+/**
+ * Clears handoffs nobody collected. Runs whenever the worker starts and with
+ * every new handoff — not on a timer, which would not survive the worker being
+ * put to sleep, and not on tabs.onRemoved, which would wake the worker every
+ * time any tab in the browser closes.
+ */
+async function sweepHandoffs(): Promise<void> {
+  const stale = staleHandoffKeys(await chrome.storage.session.get(null), Date.now(), HANDOFF_TTL_MS)
+  if (stale.length > 0) await chrome.storage.session.remove(stale)
+}
+void sweepHandoffs().catch(() => {})
+
 async function startHandoff(
   msg: { workflow: HandoffRecord['workflow']; style?: HandoffRecord['style']; intent?: HandoffRecord['intent'] },
   opener: chrome.tabs.Tab,
 ): Promise<{ ok: boolean; reason?: 'too-large' | 'failed' }> {
+  await sweepHandoffs().catch(() => {})
   const record: HandoffRecord = { workflow: msg.workflow, style: msg.style, intent: msg.intent, createdAt: Date.now(), tabId: -1 }
   if (JSON.stringify(record).length > MAX_HANDOFF_BYTES) return { ok: false, reason: 'too-large' }
   const nonce = newNonce()

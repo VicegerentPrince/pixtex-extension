@@ -39,6 +39,21 @@ export function newNonce(random: (bytes: Uint8Array) => Uint8Array = (b) => cryp
 }
 
 /**
+ * The handoff records nobody is going to collect. A claim — accepted or
+ * refused — deletes its own record, but a pixtex.dev tab that never loads, or
+ * is closed first, never claims at all, and memory is no place for a workflow
+ * to wait until the browser quits. Anything past its time, or not a record we
+ * wrote, is swept.
+ */
+export function staleHandoffKeys(stored: Record<string, unknown>, now: number, ttlMs: number): string[] {
+  return Object.keys(stored).filter((key) => {
+    if (!key.startsWith(HANDOFF_PREFIX)) return false
+    const createdAt = (stored[key] as Partial<HandoffRecord> | null)?.createdAt
+    return typeof createdAt !== 'number' || !(now - createdAt <= ttlMs)
+  })
+}
+
+/**
  * Decides a claim. Pure, so every refusal is testable: the order matters —
  * an unknown nonce says nothing about origin or tab, and a wrong origin must
  * never learn whether a nonce exists.

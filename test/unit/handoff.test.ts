@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { judgeClaim, newNonce, type HandoffRecord } from '../../src/background/handoff'
+import { judgeClaim, newNonce, staleHandoffKeys, type HandoffRecord } from '../../src/background/handoff'
 
 /**
  * "Open in Pixtex" moves a whole workflow into a web page. Only pixtex.dev,
@@ -40,6 +40,29 @@ describe('judgeClaim', () => {
     expect(judge({ senderTabId: 7 })).toEqual({ ok: false, code: 'wrong-tab' })
     expect(judge({ senderTabId: undefined })).toEqual({ ok: false, code: 'wrong-tab' })
     expect(judge({ record: record({ tabId: -1 }), senderTabId: -1 })).toEqual({ ok: false, code: 'wrong-tab' })
+  })
+})
+
+describe('staleHandoffKeys', () => {
+  const now = 1_000_000 + 5_000
+
+  it('sweeps a workflow nobody collected once it is past its time — and keeps a fresh one', () => {
+    const stored = {
+      'handoff:fresh': record(),
+      'handoff:uncollected': record({ createdAt: now - 60_001 }),
+      'handoff:mid-create': record({ tabId: -1, createdAt: now }),
+    }
+    expect(staleHandoffKeys(stored, now, 60_000)).toEqual(['handoff:uncollected'])
+  })
+
+  it('treats anything under the handoff prefix that is not a record as stale', () => {
+    const stored = { 'handoff:a': null, 'handoff:b': { createdAt: 'yesterday' }, 'handoff:c': {} }
+    expect(staleHandoffKeys(stored, now, 60_000)).toEqual(['handoff:a', 'handoff:b', 'handoff:c'])
+  })
+
+  it('never touches the other things session storage holds', () => {
+    const stored = { caps: { at: 0 }, 'pending:abc': { createdAt: 0 } }
+    expect(staleHandoffKeys(stored, now, 60_000)).toEqual([])
   })
 })
 
