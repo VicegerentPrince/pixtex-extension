@@ -64,18 +64,26 @@ Load `dist-dev/` from `chrome://extensions` (Developer mode → Load unpacked).
 local Pixtex: PNG and PDF exports, an unsaved workflow via paste, **staying
 logged in to n8n afterwards**, Open in Pixtex (and a replayed handoff being
 refused), and a render slower than Chrome's 30-second service-worker limit. It
-expects n8n on `http://localhost:5678` (owner in `E2E_N8N_EMAIL` /
-`E2E_N8N_PASSWORD`), the Pixtex web app on `:3000`, and the API on `:3001` with
+expects n8n on `http://localhost:5678` — a fresh one needs nothing (the owner
+is created with a password that is never printed), an existing one its owner in
+`E2E_N8N_EMAIL` / `E2E_N8N_PASSWORD` — the Pixtex web app on `:3000`, and the API on `:3001` with
 `EXTENSION_ORIGINS=chrome-extension://pimgfpeogbapfnnebapamdfajflbinpj` — the
 dev build's pinned id.
 
 Releases are built by CI from a `vX.Y.Z` tag, with a provenance attestation on
 the zip — never from a laptop.
 
+The Chrome Web Store listing lives in [`store/`](store/listing.md): the text to
+paste, the permission justifications (a test keeps them in step with the
+manifest), and the images. The images are real captures, regenerated rather
+than edited — `node scripts/store/capture.mjs` against the same local setup as
+`npm run e2e`, then `node scripts/store/compose.mjs`.
+
 ## License
 
-The code is MIT — see [LICENSE](LICENSE). The Pixtex name and mark (the files
-in `icons/`) are the project's brand and are not licensed for reuse.
+The code is MIT — see [LICENSE](LICENSE). The Pixtex name, mark and wordmark
+(the files in `icons/`) and the store images in `store/` are the project's
+brand and are not licensed for reuse.
 
 Built by [Muhammad Muneeb](https://github.com/VicegerentPrince) ·
 [pixtex.dev](https://pixtex.dev)

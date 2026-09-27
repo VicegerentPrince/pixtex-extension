@@ -1,0 +1,33 @@
+Export the n8n workflow you're editing as a crisp PNG, PDF, SVG, JPEG or WebP image, rendered from the workflow itself rather than screenshotted.
+
+Pixtex adds one Export button to the n8n editor. Click it and the whole workflow is saved as an image: every node, however large the workflow and however little of it fits on your screen. No stitching screenshots together, no cropping, no editor buttons in the picture.
+
+WHAT YOU GET
+• The whole workflow in one image, sharp at up to 4× (6× and 8× with Pixtex Pro)
+• PNG, PDF, SVG, JPEG and WebP
+• Four finished looks: Signature, Like n8n, Docs and Slide. Like n8n and Docs draw n8n's own node icons
+• Diagram poster: the same workflow as a one-page flowchart that someone who has never opened n8n can follow
+• AI agents with their model, memory and tools, sticky notes and named branches, drawn the way n8n draws them
+• Open in Pixtex: hand the workflow to the full editor at pixtex.dev to restyle it before you export
+• n8n Cloud and self-hosted n8n, versions 1.x and 2.x
+
+HOW TO USE IT
+On n8n Cloud, the Export button is already in the corner of the editor. On a self-hosted n8n, click the Pixtex toolbar button while your workflow is open, and choose "Just this time" or "Always on" for your n8n's address.
+
+The arrow next to Export picks the format, the look and the size. Pixtex exports the workflow as n8n last saved it; a workflow that has never been saved can be copied in n8n (Ctrl+A, then Ctrl+C) and pasted into Pixtex instead.
+
+WHAT HAPPENS TO YOUR WORKFLOW
+Workflows can contain secrets, so this is exactly what the extension does:
+• It reads a workflow only when you click Export, through the same n8n endpoint your editor uses, with your existing session.
+• Before anything leaves the page, it removes credential references, pinned execution data, and owner and sharing details.
+• The workflow is sent to api.pixtex.dev in the body of the request, rendered in memory and discarded. It is never put in a URL, never logged and never stored.
+• Open in Pixtex passes the workflow to pixtex.dev inside your browser, once, within a minute, and never through a URL.
+• The extension has no analytics and no tracking. Pixtex counts renders by the kind of app that asked for them: a number, not who.
+
+The source code is public: https://github.com/VicegerentPrince/pixtex-extension
+Privacy policy: https://pixtex.dev/privacy
+
+FREE AND PRO
+Free exports carry a small Pixtex watermark. A Pixtex Pro key ($12 a month) removes it and unlocks 6× and 8×. The same key works in the pixtex.dev editor, the Pixtex n8n node, the command-line tool and the GitHub Action.
+
+Pixtex is an independent tool. It is not affiliated with or endorsed by n8n GmbH; n8n is a trademark of n8n GmbH.

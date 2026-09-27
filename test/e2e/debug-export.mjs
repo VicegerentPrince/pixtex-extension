@@ -7,15 +7,11 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { signIn } from './n8n-owner.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const N8N = process.env.N8N_URL ?? 'http://localhost:5678'
 const ext = join(ROOT, process.argv[2] ?? 'dist-e2e')
-const { E2E_N8N_EMAIL: email, E2E_N8N_PASSWORD: password } = process.env
-if (!email || !password) {
-  console.error('Set E2E_N8N_EMAIL and E2E_N8N_PASSWORD to the owner account of your local n8n.')
-  process.exit(1)
-}
 
 const context = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), 'pixtex-dbg-')), {
   channel: 'chromium', headless: true, acceptDownloads: true, viewport: { width: 1440, height: 900 },
@@ -27,12 +23,8 @@ sw.on('console', (m) => console.log(`[sw ${m.type()}] ${m.text()}`))
 
 const page = await context.newPage()
 page.on('console', (m) => { if (m.type() === 'error') console.log(`[page error] ${m.text().slice(0, 200)}`) })
-await page.goto(`${N8N}/signin`, { waitUntil: 'domcontentloaded', timeout: 120_000 })
-await page.evaluate(async (creds) => {
-  let bid = localStorage.getItem('n8n-browserId')
-  if (!bid) { bid = crypto.randomUUID(); localStorage.setItem('n8n-browserId', bid) }
-  await fetch('/rest/login', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'browser-id': bid }, body: JSON.stringify({ emailOrLdapLoginId: creds.email, password: creds.password }) })
-}, { email, password })
+page.setDefaultNavigationTimeout(120_000)
+await signIn(page, N8N)
 const id = await page.evaluate(async () => {
   const r = await fetch('/rest/workflows', { credentials: 'same-origin', headers: { 'browser-id': localStorage.getItem('n8n-browserId') } })
   return (await r.json()).data[0].id

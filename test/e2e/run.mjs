@@ -11,7 +11,8 @@
 //      completes (against a stand-in API that waits 35s)
 //
 // Needs, running locally:
-//   n8n          N8N_URL (default http://localhost:5678), owner E2E_N8N_EMAIL / E2E_N8N_PASSWORD
+//   n8n          N8N_URL (default http://localhost:5678) — a fresh one, or its
+//                owner in E2E_N8N_EMAIL / E2E_N8N_PASSWORD (see n8n-owner.mjs)
 //   Pixtex web   http://localhost:3000   (apps/web: pnpm dev)
 //   Pixtex api   http://localhost:3001   with EXTENSION_ORIGINS=chrome-extension://pimgfpeogbapfnnebapamdfajflbinpj
 //
@@ -20,20 +21,15 @@
 import { chromium } from 'playwright'
 import { spawnSync } from 'node:child_process'
 import { createServer } from 'node:http'
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { deflateSync } from 'node:zlib'
+import { signIn } from './n8n-owner.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const N8N = process.env.N8N_URL ?? 'http://localhost:5678'
-const EMAIL = process.env.E2E_N8N_EMAIL
-const PASSWORD = process.env.E2E_N8N_PASSWORD
-if (!EMAIL || !PASSWORD) {
-  console.error('Set E2E_N8N_EMAIL and E2E_N8N_PASSWORD to the owner account of your local n8n.')
-  process.exit(1)
-}
 const WEB = 'http://localhost:3000'
 const EXT_ID = 'pimgfpeogbapfnnebapamdfajflbinpj'
 const SLOW_PORT = 3999
@@ -76,22 +72,6 @@ async function launch(extDir) {
   sw ??= await context.waitForEvent('serviceworker', { timeout: 20_000 })
   sw.on('console', (m) => swLog.push(`[sw ${m.type()}] ${m.text()}`))
   return { context, sw }
-}
-
-/** Logs in the way n8n's editor does: its own browser-id, sent as a header. */
-async function loginToN8n(page) {
-  await page.goto(`${N8N}/signin`, { waitUntil: 'domcontentloaded' })
-  const status = await page.evaluate(async ({ email, password }) => {
-    let bid = localStorage.getItem('n8n-browserId')
-    if (!bid) { bid = crypto.randomUUID(); localStorage.setItem('n8n-browserId', bid) }
-    const r = await fetch('/rest/login', {
-      method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'browser-id': bid },
-      body: JSON.stringify({ emailOrLdapLoginId: email, password }),
-    })
-    return r.status
-  }, { email: EMAIL, password: PASSWORD })
-  assert(status === 200, `n8n login answered ${status}`)
 }
 
 const E2E_WORKFLOW = {
@@ -189,7 +169,7 @@ await step('the extension loads with its pinned dev id', async () => {
 })
 
 await step('logs in to n8n and creates a workflow', async () => {
-  await loginToN8n(page)
+  await signIn(page, N8N)
   workflowId = await createWorkflow(page)
   assert(workflowId, 'no workflow id')
   return workflowId
@@ -307,7 +287,7 @@ await new Promise((r) => slow.listen(SLOW_PORT, r))
 const slowRun = await launch(join(ROOT, 'dist-e2e-slow'))
 const slowPage = await slowRun.context.newPage()
 await step('a 35-second render still completes and downloads', async () => {
-  await loginToN8n(slowPage)
+  await signIn(slowPage, N8N)
   await slowPage.goto(`${N8N}/workflow/${workflowId}`, { waitUntil: 'domcontentloaded' })
   await widget(slowPage, '.main').waitFor({ state: 'visible', timeout: 60_000 })
   const started = Date.now()
